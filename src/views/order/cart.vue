@@ -13,21 +13,6 @@ const cartItems = ref([
     price: 298.00,
     image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg'
   },
-  {
-    id: 2,
-    name: '艾尔登法环',
-    version: '豪华版',
-    price: 398.00,
-    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg'
-  },
-  {
-    id: 3,
-    name: '只狼：影逝二度',
-    version: '年度版',
-    price: 268.00,
-    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/814380/header.jpg'
-  },
-
 ])
 
 // 选中项
