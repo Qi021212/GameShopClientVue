@@ -6,7 +6,7 @@ export const useTokenStore = defineStore('token', () => {
     //响应式变量
     const token = ref('');
 
-    //const isAuthenticated = ref(false);
+    const isAuthenticated = ref(false);
 
     //修改token的函数
     const setToken = (value) => {
@@ -17,24 +17,24 @@ export const useTokenStore = defineStore('token', () => {
         token.value = '';
     };
 
-    // const login = (tokenValue) => {
-    //     isAuthenticated.value = true;
-    //     token.value = tokenValue;
-    // };
+    const login = (tokenValue) => {
+        isAuthenticated.value = true;
+        token.value = tokenValue;
+    };
 
-    // const logout = () => {
-    //     isAuthenticated.value = false;
-    //     token.value = '';
-    // };
+    const logout = () => {
+        isAuthenticated.value = false;
+        token.value = '';
+    };
 
     return {
         token,
-        //isAuthenticated,
+        isAuthenticated,
         setToken,
         removeToken,
-        // login,
-        // logout
+        login,
+        logout
     };
 }, {
-    //persist: true
+    persist: true
 });
