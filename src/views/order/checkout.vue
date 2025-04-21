@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-const router = useRouter() 
+const router = useRouter()
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 收货信息表单
@@ -29,7 +29,7 @@ const shippingRules = {
 
 // 支付相关状态
 const showPayment = ref(false)
-const selectedPayment = ref('alipay')
+const selectedPayment = ref(1)
 const shippingFormRef = ref()
 
 // 提交收货信息
@@ -44,29 +44,67 @@ const submitShippingInfo = () => {
     })
 }
 
-// 处理支付
+// 支付方式选择
 const handlePayment = () => {
-    ElMessageBox.confirm(`确认使用${getPaymentMethodName(selectedPayment.value)}支付吗？`, '支付确认', {
-        confirmButtonText: '确认支付',
-        cancelButtonText: '取消',
-        type: 'warning'
-    }).then(() => {
-        // 这里应该是调用支付接口
-        // 模拟支付成功
-        setTimeout(() => {
-            ElMessage.success('支付成功！订单已生成')
-            router.push('/orders') // 跳转到支付成功页面
-        }, 1000)
+    ElMessageBox.confirm(
+        `确认使用${getPaymentMethodName(selectedPayment.value)}支付吗？`,
+        '支付确认',
+        {
+            confirmButtonText: '确认支付',
+            cancelButtonText: '取消支付',
+            type: 'warning',
+            distinguishCancelAndClose: true // 区分取消和关闭
+        }
+    ).then(() => {
+        // 确认支付 - 调用支付接口
+        submitOrder(true) // true表示已支付
+    }).catch((action) => {
+        if (action === 'cancel') {
+            // 取消支付 - 创建未支付订单
+            submitOrder(false) // false表示未支付
+        }
     })
 }
 
-// 获取支付方式名称
-const getPaymentMethodName = (method) => {
-    const methods = {
-        alipay: '支付宝',
-        wechat: '微信支付',
+// 创建订单
+import { createOrder,updateOrderStatus } from '@/api/order.js'
+const submitOrder = async (isPaid) => {
+    try {
+        // 组装订单数据
+        const orderData = {
+            userId: 13,
+            name: shippingForm.value.name,
+            phone: shippingForm.value.phone,
+            email: shippingForm.value.email,
+            payType: selectedPayment.value,
+        }
+        // 调用API提交订单
+        const response = await createOrder(orderData);
+        if (response) {
+            const orderId = response.orderId;
+            console.log('订单ID:', orderId)
+            if(isPaid) {
+                // 支付成功逻辑
+                await updateOrderStatus(orderId);
+                ElMessage.success('支付成功！')
+            } else {
+                // 创建订单成功但未支付逻辑
+                ElMessage.success('订单已创建（待支付）')
+            }
+            router.push('/orders');
+        }
+    } catch (error) {
+        ElMessage.error(`订单提交失败: ${error.message}`)
     }
-    return methods[method] || method
+}
+
+// 获取支付方式名称
+const getPaymentMethodName = (payType) => {
+    const methods = {
+        1: '支付宝',
+        2: '微信支付',
+    }
+    return methods[payType] || payType
 }
 </script>
 
@@ -98,15 +136,15 @@ const getPaymentMethodName = (method) => {
                 <h3>选择支付方式</h3>
                 <div class="payment-options">
                     <el-radio-group v-model="selectedPayment">
-                        <el-radio label="alipay" border>
+                        <el-radio label="1" border>
                             <div class="payment-option">
-                                <img src="https://img.alicdn.com/tfs/TB1G5WgjXY7gK0jSZKzXXaikpXa-200-200.png" alt="支付宝">
+                                <img src="../../assets/alipay.png" alt="支付宝">
                                 <span>支付宝</span>
                             </div>
                         </el-radio>
-                        <el-radio label="wechat" border>
+                        <el-radio label="2" border>
                             <div class="payment-option">
-                                <img src="https://img.alicdn.com/tfs/TB1Z0PywTtYBeNjy1XdXXXXyVXa-200-200.png"
+                                <img src="../../assets/wechat.png"
                                     alt="微信支付">
                                 <span>微信支付</span>
                             </div>
@@ -137,18 +175,18 @@ const getPaymentMethodName = (method) => {
 }
 
 .cart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
 }
 
 .cart-header h2 {
-  font-size: 24px;
-  color: #ffffff;
-  margin: 0;
+    font-size: 24px;
+    color: #ffffff;
+    margin: 0;
 }
 
 

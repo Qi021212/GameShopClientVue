@@ -1,18 +1,37 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 
 const router = useRouter()
 
-// 游戏数据 - 只包含图片和名称
-const games = ref([
-    {
-        id: 1,
-        name: '赛博朋克2077',
-        image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg'
-    },
-])
+// 游戏数据
+const games = ref([])
+// 获取游戏数据
+import { getGameList } from '@/api/user.js'
+const fetchGameList = async () => {
+    try {
+        const response = await getGameList(13); // 假设13是用户ID
+        console.log('API响应:', response); // 调试用
 
+        // 修正1：正确处理嵌套结构
+        const gameItems = response.items;
+        console.log('游戏列表:', gameItems); // 调试用
+
+        if (gameItems.length > 0) {
+            games.value = gameItems.map(game => ({
+                itemId: game.itemId,
+                itemName: game.itemName,
+                picture1: game.picture1 ? `http://localhost:8080/images/${game.picture1}` : '/src/assets/loading.png'
+            }));
+        } else {
+            ElMessage.warning('您的游戏库为空');
+        }
+    } catch (error) {
+        console.error('获取游戏数据失败:', error);
+        ElMessage.error('加载游戏数据失败，请稍后重试');
+    }
+};
 // 图片加载失败处理
 const handleImageError = (event) => {
     event.target.src = 'https://via.placeholder.com/460x215?text=Game+Cover'
@@ -22,6 +41,10 @@ const handleImageError = (event) => {
 const viewGameDetails = (gameId) => {
     router.push(`/games/${gameId}`)
 }
+
+onMounted(() => {
+    fetchGameList()
+})
 </script>
 
 <template>
@@ -29,11 +52,11 @@ const viewGameDetails = (gameId) => {
         <h2 class="library-title">我的游戏库</h2>
 
         <div class="games-container">
-            <div v-for="game in games" :key="game.id" class="game-item" @click="viewGameDetails(game.id)">
+            <div v-for="game in games" :key="game.itemId" class="game-item" @click="viewGameDetails(game.itemId)">
                 <div class="game-image-wrapper">
-                    <img :src="game.image" :alt="game.name" class="game-image" @error="handleImageError">
+                    <img :src="game.picture1" :alt="game.itemName" class="game-image" @error="handleImageError">
                 </div>
-                <div class="game-name">{{ game.name }}</div>
+                <div class="game-name">{{ game.itemName }}</div>
             </div>
         </div>
     </div>

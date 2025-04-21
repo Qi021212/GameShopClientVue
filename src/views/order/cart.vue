@@ -1,100 +1,113 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter() // 确保已导入useRouter
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 购物车数据
-const cartItems = ref([
-  {
-    id: 1,
-    name: '赛博朋克2077',
-    version: '标准版',
-    price: 298.00,
-    image: 'https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg'
-  },
-])
+const cartItems = ref([]);
+import { getCartList } from '@/api/cart.js'
+// 获取购物车列表
+const fetchCartList = async () => {
+  try {
+    const response = await getCartList(13); // 假设13是用户ID
+    console.log(response);
+    if (response && Array.isArray(response)) { // 检查是否为数组
+      cartItems.value = response.map(item => ({
+        ...item,
+        picture1: item.picture1 ? `http://localhost:8080/images/${item.picture1}` : '/src/assets/loading.png',
+      }));
+    } else {
+      ElMessage.warning('未获取到购物车数据');
+    }
+  } catch (error) {
+    ElMessage.error('获取购物车数据失败');
+  }
+};
 
+
+
+// 单个删除
+import { deleteCartItem } from '@/api/cart.js';
+const handleRemove = async (id) => {
+  try {
+    // 显示确认对话框
+    await ElMessageBox.confirm('确定要移除该商品吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    // 调用API删除商品
+    const response = await deleteCartItem(id)
+    // 根据后端返回结果处理
+    if (response.code === 200) { // 假设成功返回code为200
+      // 从本地购物车列表中移除
+      cartItems.value = cartItems.value.filter(item => item.id !== id)
+      // 从选中项中也移除
+      selectedItems.value = selectedItems.value.filter(item => item.id !== id)
+      ElMessage.success('已移除商品')
+    } else {
+      ElMessage.error(response.message || '移除商品失败')
+    }
+  } catch (error) {
+    // 用户点击取消或API调用失败
+    if (error !== 'cancel') { // 不是用户主动取消的情况
+      console.error('删除商品失败:', error)
+      ElMessage.error(error.message || '移除商品失败')
+    }
+  }
+}
+
+
+// 去结算
 // 选中项
 const selectedItems = ref([])
-const selectAll = ref(false)
-
 // 计算总价
 const totalPrice = computed(() => {
   return selectedItems.value.reduce((sum, item) => sum + item.price, 0)
 })
-
-
 // 选择变化
 const handleSelectionChange = (selection) => {
   selectedItems.value = selection
-  selectAll.value = selection.length === cartItems.value.length
 }
-
-// 单个删除
-const handleRemove = (id) => {
-  ElMessageBox.confirm('确定要移除该商品吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    cartItems.value = cartItems.value.filter(item => item.id !== id)
-    // 从选中项中也移除
-    selectedItems.value = selectedItems.value.filter(item => item.id !== id)
-    ElMessage.success('已移除商品')
-  })
-}
-
-// 批量删除
-const handleBatchRemove = () => {
-  ElMessageBox.confirm(`确定要移除选中的 ${selectedItems.value.length} 件商品吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    const selectedIds = new Set(selectedItems.value.map(item => item.id))
-    cartItems.value = cartItems.value.filter(item => !selectedIds.has(item.id))
-    selectedItems.value = []
-    selectAll.value = false
-    ElMessage.success('已移除选中商品')
-  })
-}
-
-// 提交订单
-const handleSubmitOrder = () => {
-
-  ElMessageBox.confirm(
-    `确认购买 ${selectedItems.value.length} 件商品，总价 ¥${totalPrice.value.toFixed(2)}？`,
-    '确认订单',
-    {
-      confirmButtonText: '确认支付',
-      cancelButtonText: '再想想',
-      type: 'success'
+import { updateCartItemStatus } from '@/api/cart.js'
+// 结算
+const handleSubmitOrder = async () => {
+  try {
+    // 确认对话框
+    await ElMessageBox.confirm(
+      `确认购买 ${selectedItems.value.length} 件商品，总价 ¥${totalPrice.value.toFixed(2)}？`,
+      '确认订单',
+      {
+        confirmButtonText: '确认支付',
+        cancelButtonText: '再想想',
+        type: 'success'
+      }
+    )
+    // 调用提交订单API
+    const ids = selectedItems.value.map(item => item.id)
+    const response = await updateCartItemStatus(ids);
+    if (response) {
+      ElMessage.success('订单生成成功！')
+      // 刷新购物车列表
+      await fetchCartList()
+      // 清空选中状态
+      selectedItems.value = []
+      // 跳转到订单详情页
+      router.push('/checkout')
+    } else {
+      ElMessage.error(response.message || '订单生成失败')
     }
-  ).then(() => {
-    // 1. 创建订单数据
-    const orderData = {
-      items: [...selectedItems.value], // 复制选中的商品
-      total: totalPrice.value,
-      selectedIds: selectedItems.value.map(item => item.id)
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '订单生成失败')
     }
-    // 2. 这里应该是实际调用提交订单API的地方
-    // 例如：await submitOrderAPI(orderData)
-    // 3. 从购物车中移除已购买的商品
-    const selectedIds = new Set(selectedItems.value.map(item => item.id))
-    cartItems.value = cartItems.value.filter(item => !selectedIds.has(item.id))
-    // 4. 清空选中状态
-    selectedItems.value = []
-    selectAll.value = false
-    // 5. 显示成功消息
-    ElMessage.success('订单提交成功！')
-    // 6. 跳转到结算页面
-    router.push('/checkout');
-  }).catch(() => {
-    // 用户点击"再想想"或关闭对话框时执行
-    console.log('用户取消了订单提交')
-  })
+  }
 }
+
+onMounted(() => {
+  fetchCartList()
+})
 </script>
 
 
@@ -102,10 +115,6 @@ const handleSubmitOrder = () => {
   <div class="cart-container">
     <div class="cart-header">
       <h2>我的购物车</h2>
-      <!-- 购物车操作 -->
-      <div class="cart-actions">
-        <el-button type="danger" :disabled="selectedItems.length === 0" @click="handleBatchRemove">批量删除</el-button>
-      </div>
     </div>
     <!-- 购物车列表 -->
     <div class="cart-list">
@@ -115,10 +124,10 @@ const handleSubmitOrder = () => {
         <el-table-column label="商品信息" width="400">
           <template #default="{ row }">
             <div class="game-info">
-              <el-image :src="row.image" fit="cover" class="game-image" />
+              <el-image :src="row.picture1" fit="cover" class="game-image" />
               <div class="game-details">
-                <h4 class="game-name">{{ row.name }}</h4>
-                <p class="game-version">{{ row.version }}</p>
+                <h4 class="game-name">{{ row.itemName }}</h4>
+                <p class="game-version">{{ row.editionName }}</p>
               </div>
             </div>
           </template>
@@ -170,12 +179,6 @@ const handleSubmitOrder = () => {
   font-size: 24px;
   color: #ffffff;
   margin: 0;
-}
-
-.cart-actions {
-  display: flex;
-  align-items: center;
-  gap: 15px;
 }
 
 .cart-list {
