@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SideBar Demo</title>
+  <!-- 示例中直接使用在线 jQuery，若你不能访问外网，可下载 jQuery 到本地 -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <style>
+    /* 侧边栏的基础样式 */
+    .addProductBarClass {
+      position: fixed;
+      top: 0;              /* 让它固定在页面顶部 */
+      right: -35%;         /* 初始隐藏在右侧区域之外 */
+      width: 35%;
+      height: calc(100vh - 2.5rem);
+      z-index: 9999;
+
+      /* 用 right 来实现动画，若用 width 也行，只是方式略不同 */
+      transition: right 0.5s ease;
+      background-color: #f8f9fa; /* 给个背景色看得明显 */
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+
+    /* 切换时添加此类，让 right=0，就会滑进来 */
+    .addProductBarClass.open {
+      right: 0;
+    }
+
+    /* 简单模拟一下按钮样式 */
+    .btn {
+      padding: 0.5rem 1rem;
+      margin: 1rem;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background-color: #ffffff;
+    }
+    .btn-primary {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+    }
+    .btn-close {
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      float: right;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 触发按钮 -->
+<button type="button" id="addProductBarToggler" class="btn btn-primary">
+  Add New Product
+</button>
+
+<!-- 侧边栏本体 -->
+<div id="addProductBar" class="addProductBarClass">
+  <div class="border-bottom offcanvas-header">
+    <div class="text-start">
+      <h5 class="mb-0 fs-4">Shop Cart</h5>
+      <small>Location in 382480</small>
+    </div>
+    <!-- 关闭按钮 -->
+    <button type="button" class="btn-close" aria-label="Close">×</button>
+  </div>
+  <div class="offcanvas-body">
+    <p>这里是侧边栏的内容示例。</p>
+  </div>
+</div>
+
+<script>
+  // 用 jQuery 监听按钮点击
+  $(document).ready(function() {
+    // 点击主按钮，切换侧边栏
+    $("#addProductBarToggler").click(function(){
+      $("#addProductBar").toggleClass("open");
+    });
+
+    // 点击侧边栏内部的关闭按钮时，关闭侧边栏
+    $(".btn-close").click(function(){
+      $("#addProductBar").removeClass("open");
+    });
+  });
+</script>
+
+</body>
+</html>
