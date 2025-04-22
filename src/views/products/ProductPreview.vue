@@ -297,7 +297,7 @@ onMounted(fetchProductList); // 组件挂载时调用
 
 <style>
 @import "../../assets/ProductsManage/app.css";
-/* @import "../../assets/ProductsManage/AddProductBar.css";  */
+@import '../../assets/ProductsManage/style.css';
 
 .card-header {
   display: flex;

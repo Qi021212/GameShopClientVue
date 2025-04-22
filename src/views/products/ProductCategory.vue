@@ -305,7 +305,7 @@ onMounted(fetchProductList
 
 <style>
 @import "../../assets/ProductsManage/app.css";
-/* @import "../../assets/ProductsManage/AddProductBar.css";  */
+@import '../../assets/ProductsManage/style.css';
 
 .card-header {
   display: flex;

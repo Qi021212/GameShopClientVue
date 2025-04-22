@@ -496,6 +496,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 @import "@/assets/ProductsManage/app.css";
+@import '../../assets/ProductsManage/style.css';
 .wrapper, .main {
   width: 100%; /* 让宽度占满可用空间 */
   max-width: 1200px; /* 设置最大宽度 */
