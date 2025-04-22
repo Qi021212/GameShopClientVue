@@ -295,7 +295,7 @@ onMounted(fetchProductList); // 组件挂载时调用
 
 
 
-<style>
+<style scoped>
 @import "../../assets/ProductsManage/app.css";
 @import '../../assets/ProductsManage/style.css';
 

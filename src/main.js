@@ -1,18 +1,17 @@
+import './assets/main.css'
+import { createPinia } from 'pinia'
 import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+// 导入 Element Plus
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-import { createPinia } from 'pinia'
 
-// 初始化应用实例
-const app = createApp(App)
-const pinia = createPinia()
+//导入路由
+import router from './router/index.js'
+import App from './App.vue'
 
-// 按正确顺序注册插件
-app.use(router)
-app.use(ElementPlus)
-app.use(pinia)
-
-// 最后挂载
+const app = createApp(App);
+const pinia = createPinia();
+app.use(pinia);
+app.use(router);
+app.use(ElementPlus);
 app.mount('#app')

@@ -303,7 +303,7 @@ onMounted(fetchProductList
 
 
 
-<style>
+<style scoped>
 @import "../../assets/ProductsManage/app.css";
 @import '../../assets/ProductsManage/style.css';
 

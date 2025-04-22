@@ -4,11 +4,18 @@ import ProductPreview from '@/views/products/ProductPreview.vue'
 import ProductDetail from '@/views/products/ProductDetail.vue'
 import ProductCategory from '@/views/products/ProductCategory.vue'
 import CatageryNav from '../components/CatageryNav.vue'
+import LayoutVue from '@/views/Menu.vue'
+
 // 路由配置
 const routes = [
     {
         path: '/',
-        redirect: '/products'
+        redirect: '/main'
+    },
+    {
+        path: '/main',
+        name: 'Main',
+        component: LayoutVue,
     },
     {
         path: '/products',
