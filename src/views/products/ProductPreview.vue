@@ -29,29 +29,7 @@ const fetchProductList = async () => {
   }
 };
 
-// 删除单个商品
-const deleteProductById = async (id) => {
-  // 弹出确认框，询问是否删除
-  ElMessageBox.confirm('是否删除该商品?', '确认删除', {
-    confirmButtonText: '删除',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-  .then(async () => {
-    // 用户点击确认后，执行删除操作
-    try {
-      const result = await deleteProduct(id); // 调用删除商品的 API
-      ElMessage.success('商品删除成功');
-      fetchProductList(); // 删除成功后刷新商品列表
-    } catch (error) {
-      ElMessage.error('删除商品失败');
-    }
-  })
-  .catch(() => {
-    // 用户点击取消，不做任何操作
-    ElMessage.info('删除操作已取消');
-  });
-};
+
 
 
 // 搜索关键字
@@ -113,13 +91,6 @@ const router = useRouter();
 const route = useRouter();
 
 
- const goToCategoryNav = () => {
-  router.push({
-    path: '/products/category',
-    
-  });
-};
-
 
 // 定义跳转到 ProductsDetail 页面的方法
 const goToProductsDetail = (id) => {
@@ -152,15 +123,7 @@ onMounted(fetchProductList); // 组件挂载时调用
                     </div>
                   </div>
                 </div>
-                  <div class="me-3">
-                  <el-button 
-                    type="primary" 
-                    @click="goToCategoryNav"
-                    icon="el-icon-menu"
-                  >
-                    分类导航
-                  </el-button>
-                  </div>
+                 
                 <div id="datatables-products_wrapper" class="dt-container dt-bootstrap5 dt-empty-footer">
                   <div class="row mt-2 justify-content-md-center">
                     <div class="col-12">
