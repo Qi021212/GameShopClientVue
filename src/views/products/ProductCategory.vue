@@ -136,44 +136,12 @@ const pagedProducts = computed(() => {
 const router = useRouter();
 const route = useRoute();
 
-// 定义跳转到 AddProducts 页面的方法
-const goToAddProducts = () => {
-  router.push('/addProducts');
-};
+
 // 定义跳转到 ProductsDetail 页面的方法
 const goToProductsDetail = (id) => {
   router.push(`/products/${id}`);
 };
 
-// 批量删除选中的商品
-const batchDeleteProducts = async () => {
-  if (selectedProducts.value.length === 0) {
-    ElMessage.warning('请选择要删除的商品');
-    return;
-  }
-  
-  // 弹出确认框，询问是否批量删除
-  ElMessageBox.confirm('是否删除选中的商品?', '确认删除', {
-    confirmButtonText: '删除',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-  .then(async () => {
-    // 用户点击确认后，执行批量删除操作
-    try {
-      const result = await deleteBatchProducts(selectedProducts.value); // 调用批量删除的 API
-      ElMessage.success('批量删除成功');
-      fetchProductList(); // 删除成功后刷新商品列表
-      selectedProducts.value = []; // 清空选中的商品
-    } catch (error) {
-      ElMessage.error('批量删除失败');
-    }
-  })
-  .catch(() => {
-    // 用户点击取消，不做任何操作
-    ElMessage.info('删除操作已取消');
-  });
-};
 
 onMounted(fetchProductList
   
