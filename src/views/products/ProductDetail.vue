@@ -7,10 +7,43 @@ import { getProductDetail, addProductComment } from '@/api/product.js';
 import { addToCart } from '@/api/cart.js';
 
 const route = useRoute();
+const router = useRouter();
+
+import { useTokenStore } from '@/stores/token';
+import { useUserInfoStore } from '@/stores/UserInfo';
+const tokenStore = useTokenStore();
+
+const localUserInfo = ref({
+    id: useUserInfoStore().info.id,
+    username: useUserInfoStore().info.username,
+    email: useUserInfoStore().info.email
+});
+
+
+const getUserInfo = async () => {
+    if (!tokenStore.isAuthenticated) {
+        ElMessage.error('请先登录');
+        router.push('/login');
+        return;
+    }
+    console
+    try {
+        const id = useUserInfoStore().info.id; 
+        if (!id || isNaN(id)) {
+            ElMessage.error('无法获取ID，请重新登录');
+            router.push('/');
+            return;
+        }
+        await useUserInfoStore().fetchUserInfo(id);
+        localUserInfo.value = JSON.parse(JSON.stringify(useUserInfoStore().info));
+    } catch (error) {
+        ElMessage.error('获取信息失败');
+    }
+};
 
 const selectedEdition = ref(null);
 const loading = ref(false);
-const userId = ref(14); // 示例用户ID
+const userId = ref(localUserInfo.value.id); 
 
 const product = ref([]);
 // 图片展示
@@ -24,6 +57,16 @@ const actualPictureKeys = computed(() => {
   }
   return keys;
 });
+
+// 分类映射
+const categoryMap = {
+  action: '动作',
+  adventure: '冒险',
+  casual: '休闲',
+  role: '角色扮演',
+  simulation: '模拟',
+  sports: '体育',
+};
 
 // 评论相关
 const newComment = ref('');
@@ -93,7 +136,10 @@ const toggleLike = (index) => {
   comment.like = comment.likeActive ? (comment.like || 0) + 1 : (comment.like || 1) - 1;
 };
 
-onMounted(fetchProductDetail);
+onMounted(() => {
+  fetchProductDetail();
+  getUserInfo();
+})
 </script>
 
 <template>
@@ -123,7 +169,7 @@ onMounted(fetchProductDetail);
         <div class="product-info">
           <h1 class="product-title">{{ product.name }}</h1>
           <div class="meta-section">
-            <el-tag type="info" class="category-tag">{{ product.category }}</el-tag>
+            <el-tag type="info" class="category-tag">{{ categoryMap[product.category] || product.category }}</el-tag>
           </div>
           <div class="price-section">
             <span class="price-label">价格:</span>
@@ -303,7 +349,6 @@ onMounted(fetchProductDetail);
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
 }
 
 .rating-section {
@@ -322,7 +367,7 @@ onMounted(fetchProductDetail);
 }
 
 .price-section {
-  margin: 24px 0;
+  margin: 0;
 }
 
 .price-label {

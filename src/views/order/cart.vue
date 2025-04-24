@@ -4,13 +4,45 @@ import { useRouter } from 'vue-router'
 const router = useRouter() // 确保已导入useRouter
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+import { useTokenStore } from '@/stores/token';
+import { useUserInfoStore } from '@/stores/UserInfo';
+const tokenStore = useTokenStore();
+
+const localUserInfo = ref({
+    id: useUserInfoStore().info.id,
+    username: useUserInfoStore().info.username,
+    email: useUserInfoStore().info.email
+});
+
+
+const getUserInfo = async () => {
+    if (!tokenStore.isAuthenticated) {
+        ElMessage.error('请先登录');
+        router.push('/login');
+        return;
+    }
+    console
+    try {
+        const id = useUserInfoStore().info.id; 
+        if (!id || isNaN(id)) {
+            ElMessage.error('无法获取ID，请重新登录');
+            router.push('/');
+            return;
+        }
+        await useUserInfoStore().fetchUserInfo(id);
+        localUserInfo.value = JSON.parse(JSON.stringify(useUserInfoStore().info));
+    } catch (error) {
+        ElMessage.error('获取信息失败');
+    }
+};
+
 // 购物车数据
 const cartItems = ref([]);
 import { getCartList } from '@/api/cart.js'
 // 获取购物车列表
 const fetchCartList = async () => {
   try {
-    const response = await getCartList(14); // 假设13是用户ID
+    const response = await getCartList(localUserInfo.value.id); 
     console.log(response);
     if (response && Array.isArray(response)) { // 检查是否为数组
       cartItems.value = response.map(item => ({
@@ -106,7 +138,8 @@ const handleSubmitOrder = async () => {
 }
 
 onMounted(() => {
-  fetchCartList()
+  fetchCartList();
+  getUserInfo();
 })
 </script>
 

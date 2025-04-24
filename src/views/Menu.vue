@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted,computed } from 'vue';
-import { ElMenu, ElMenuItem, ElSubMenu, ElMessageBox,ElMessage } from 'element-plus';
+import { ref, onMounted, computed } from 'vue';
+import { ElMenu, ElMenuItem, ElSubMenu, ElMessageBox, ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 const router = useRouter();
 const route = router.currentRoute;
@@ -25,7 +25,7 @@ const getUserInfo = async () => {
     }
     console
     try {
-        const id = useUserInfoStore().info.id; 
+        const id = useUserInfoStore().info.id;
         if (!id || isNaN(id)) {
             ElMessage.error('无法获取ID，请重新登录');
             router.push('/');
@@ -42,33 +42,27 @@ onMounted(() => {
     getUserInfo();
 });
 
-// 退出登录功能
-const handleLogout = async () => {
-  try {
-    await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    });
-    
-    // 清除token和用户信息
+//退出登录
+const handleLogout = () => {
+  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    // 用户点击确定，执行退出登录操作
     tokenStore.removeToken();
-    userInfoStore.removeInfo();
-    
-    // 跳转到登录页
-    router.push('/login');
-  } catch (error) {
-    // 用户点击了取消
+    router.push('/login'); // 假设退出登录后跳转到登录页面
+  }).catch(() => {
+    // 用户点击取消，不做任何操作
     console.log('取消退出登录');
-  }
-}
-
+  });
+};
 </script>
 
 <template>
     <div class="header-container">
         <el-menu :default-active="route.path" class="main-menu" mode="horizontal" background-color="#171D25"
-            text-color="#efefef" active-text-color="#0077FF"  router>
+            text-color="#efefef" active-text-color="#0077FF" router>
             <!-- 左侧菜单项 -->
             <div class="left-section">
                 <img src="/src/assets/logo.png" alt="游戏商店" class="site-logo">

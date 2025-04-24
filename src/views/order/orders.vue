@@ -2,6 +2,38 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+import { useTokenStore } from '@/stores/token';
+import { useUserInfoStore } from '@/stores/UserInfo';
+const tokenStore = useTokenStore();
+
+const localUserInfo = ref({
+    id: useUserInfoStore().info.id,
+    username: useUserInfoStore().info.username,
+    email: useUserInfoStore().info.email
+});
+
+
+const getUserInfo = async () => {
+    if (!tokenStore.isAuthenticated) {
+        ElMessage.error('请先登录');
+        router.push('/login');
+        return;
+    }
+    console
+    try {
+        const id = useUserInfoStore().info.id; 
+        if (!id || isNaN(id)) {
+            ElMessage.error('无法获取ID，请重新登录');
+            router.push('/');
+            return;
+        }
+        await useUserInfoStore().fetchUserInfo(id);
+        localUserInfo.value = JSON.parse(JSON.stringify(useUserInfoStore().info));
+    } catch (error) {
+        ElMessage.error('获取信息失败');
+    }
+};
+
 // 订单数据
 const orderData = ref([])
 
@@ -9,7 +41,7 @@ const orderData = ref([])
 import { getOrderList } from '@/api/order.js'
 const fetchOrderList = async () => {
     try {
-        const response = await getOrderList(13); // 假设13是用户ID
+        const response = await getOrderList(localUserInfo.value.id); // 假设13是用户ID
         console.log(response);
         if (response && Array.isArray(response)) { // 检查是否为数组
             orderData.value = response.map(item => ({
@@ -133,7 +165,8 @@ const handlePay = async (orderId) => {
 };
 
 onMounted(() => {
-    fetchOrderList()
+    fetchOrderList();
+    getUserInfo();
 })
 </script>
 

@@ -63,7 +63,15 @@ const fetchProductList = async () => {
     ElMessage.error('获取商品数据失败');
   }
 };
-
+// 分类映射
+const categoryMap = {
+  action: '动作',
+  adventure: '冒险',
+  casual: '休闲',
+  role: '角色扮演',
+  simulation: '模拟',
+  sports: '体育',
+};
 // 分页相关变量
 const currentPage = ref(1);
 const pageSize = ref(5);
@@ -139,7 +147,11 @@ onMounted(() => {
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="category" label="类别" width="120" />
+          <el-table-column prop="category" label="类别" width="120">
+            <template #default="{ row }">
+              {{ categoryMap[row.category] || row.category }}
+            </template>
+          </el-table-column>
           <el-table-column prop="price" label="价格" width="120">
             <template #default="{ row }">
               ￥{{ Number(row.price || 0).toFixed(2) }}

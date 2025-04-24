@@ -1,8 +1,41 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 import { ElMessage, ElMessageBox } from 'element-plus'
+
+import { useTokenStore } from '@/stores/token';
+import { useUserInfoStore } from '@/stores/UserInfo';
+const tokenStore = useTokenStore();
+
+const localUserInfo = ref({
+    id: useUserInfoStore().info.id,
+    username: useUserInfoStore().info.username,
+    email: useUserInfoStore().info.email
+});
+
+
+const getUserInfo = async () => {
+    if (!tokenStore.isAuthenticated) {
+        ElMessage.error('请先登录');
+        router.push('/login');
+        return;
+    }
+    console
+    try {
+        const id = useUserInfoStore().info.id; 
+        if (!id || isNaN(id)) {
+            ElMessage.error('无法获取ID，请重新登录');
+            router.push('/');
+            return;
+        }
+        await useUserInfoStore().fetchUserInfo(id);
+        localUserInfo.value = JSON.parse(JSON.stringify(useUserInfoStore().info));
+    } catch (error) {
+        ElMessage.error('获取信息失败');
+    }
+};
+
 
 // 收货信息表单
 const shippingForm = ref({
@@ -72,7 +105,7 @@ const submitOrder = async (isPaid) => {
     try {
         // 组装订单数据
         const orderData = {
-            userId: 13,
+            userId: localUserInfo.value.id,
             name: shippingForm.value.name,
             phone: shippingForm.value.phone,
             email: shippingForm.value.email,
@@ -106,6 +139,10 @@ const getPaymentMethodName = (payType) => {
     }
     return methods[payType] || payType
 }
+
+onMounted(() => {
+  getUserInfo();
+})
 </script>
 
 <template>

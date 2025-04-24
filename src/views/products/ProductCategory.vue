@@ -1,11 +1,19 @@
 <script setup>
 import { Search } from '@element-plus/icons-vue';
 import { ref, computed, onMounted } from 'vue';
-import { ElImage, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElPagination,ElMessage } from 'element-plus';
+import { ElImage, ElTable, ElTableColumn, ElButton, ElCard, ElInput, ElPagination, ElMessage, carouselContextKey } from 'element-plus';
 import { getProductsList } from '@/api/product.js';
-import { useRouter ,useRoute} from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 const products = ref([]);
-
+// 分类映射
+const categoryMap = {
+  action: '动作',
+  adventure: '冒险',
+  casual: '休闲',
+  role: '角色扮演',
+  simulation: '模拟',
+  sports: '体育',
+};
 // 获取商品数据并映射格式
 const fetchProductList = async () => {
   try {
@@ -134,7 +142,11 @@ onMounted(fetchProductList); // 组件挂载时调用
               </div>
             </template>
           </el-table-column>
-          <el-table-column prop="category" label="类别" width="120" />
+          <el-table-column prop="category" label="类别" width="120">
+            <template #default="{ row }">
+              {{ categoryMap[row.category] || row.category }}
+            </template>
+          </el-table-column>
           <el-table-column prop="price" label="价格" width="120">
             <template #default="{ row }">
               ￥{{ row.price.toFixed(2) }}

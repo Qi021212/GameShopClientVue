@@ -4,6 +4,38 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
+import { useTokenStore } from '@/stores/token';
+import { useUserInfoStore } from '@/stores/UserInfo';
+const tokenStore = useTokenStore();
+
+const localUserInfo = ref({
+    id: useUserInfoStore().info.id,
+    username: useUserInfoStore().info.username,
+    email: useUserInfoStore().info.email
+});
+
+
+const getUserInfo = async () => {
+    if (!tokenStore.isAuthenticated) {
+        ElMessage.error('请先登录');
+        router.push('/login');
+        return;
+    }
+    console
+    try {
+        const id = useUserInfoStore().info.id; 
+        if (!id || isNaN(id)) {
+            ElMessage.error('无法获取ID，请重新登录');
+            router.push('/');
+            return;
+        }
+        await useUserInfoStore().fetchUserInfo(id);
+        localUserInfo.value = JSON.parse(JSON.stringify(useUserInfoStore().info));
+    } catch (error) {
+        ElMessage.error('获取信息失败');
+    }
+};
+
 
 // 游戏数据
 const games = ref([])
@@ -11,7 +43,7 @@ const games = ref([])
 import { getGameList } from '@/api/user.js'
 const fetchGameList = async () => {
     try {
-        const response = await getGameList(13); // 假设13是用户ID
+        const response = await getGameList(localUserInfo.value.id); // 假设13是用户ID
         console.log('API响应:', response); // 调试用
 
         // 修正1：正确处理嵌套结构
@@ -39,11 +71,12 @@ const handleImageError = (event) => {
 
 // 查看游戏详情
 const viewGameDetails = (gameId) => {
-    router.push(`/games/${gameId}`)
+    router.push(`/products/${gameId}`)
 }
 
 onMounted(() => {
-    fetchGameList()
+    fetchGameList();
+    getUserInfo();
 })
 </script>
 
