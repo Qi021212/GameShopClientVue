@@ -19,12 +19,13 @@ request.interceptors.response.use(
   }
 );
 
+
 // 请求拦截器
 request.interceptors.request.use(
   config => {
       const tokenStore = useTokenStore();
       const token = tokenStore.token;
-      if (token) {
+      if (token && config.url !== '/api/user' && config.url !== '/api/captcha') {
           config.headers.Authorization = `Bearer ${token}`; // 确保添加 Bearer 前缀
       }
       return config;

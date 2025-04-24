@@ -10,7 +10,7 @@ import { getCartList } from '@/api/cart.js'
 // 获取购物车列表
 const fetchCartList = async () => {
   try {
-    const response = await getCartList(13); // 假设13是用户ID
+    const response = await getCartList(14); // 假设13是用户ID
     console.log(response);
     if (response && Array.isArray(response)) { // 检查是否为数组
       cartItems.value = response.map(item => ({

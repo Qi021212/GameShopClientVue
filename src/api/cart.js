@@ -1,5 +1,14 @@
 import request from '@/utils/request';
 
+// 添加商品到购物车
+export const addToCart = (data) => {
+    return request({
+        url: '/cart/add',
+        method: 'post',
+        data
+    })
+}
+
 // 查看购物车
 export const getCartList = async (id) => {
     try {

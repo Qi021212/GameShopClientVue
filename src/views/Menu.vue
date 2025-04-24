@@ -1,45 +1,89 @@
 <script setup>
-import { ElMenu, ElMenuItem, ElSubMenu, ElInput, ElIcon, ElMessageBox } from 'element-plus';
+import { ref, onMounted,computed } from 'vue';
+import { ElMenu, ElMenuItem, ElSubMenu, ElMessageBox,ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
-import{ Search } from '@element-plus/icons-vue';
 const router = useRouter();
 const route = router.currentRoute;
 
+import { useTokenStore } from '@/stores/token';
+import { useUserInfoStore } from '@/stores/UserInfo';
+const tokenStore = useTokenStore();
+const userInfoStore = useTokenStore();
+
+const localUserInfo = ref({
+    id: useUserInfoStore().info.id,
+    username: useUserInfoStore().info.username,
+    email: useUserInfoStore().info.email
+});
+
+
+const getUserInfo = async () => {
+    if (!tokenStore.isAuthenticated) {
+        ElMessage.error('请先登录');
+        router.push('/login');
+        return;
+    }
+    console
+    try {
+        const id = useUserInfoStore().info.id; 
+        if (!id || isNaN(id)) {
+            ElMessage.error('无法获取ID，请重新登录');
+            router.push('/');
+            return;
+        }
+        await useUserInfoStore().fetchUserInfo(id);
+        localUserInfo.value = JSON.parse(JSON.stringify(useUserInfoStore().info));
+    } catch (error) {
+        ElMessage.error('获取信息失败');
+    }
+};
+
+onMounted(() => {
+    getUserInfo();
+});
+
 // 退出登录功能
-const handleLogout = () => {
-    ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-    }).then(() => {
-        router.push('/login')
-    })
+const handleLogout = async () => {
+  try {
+    await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    });
+    
+    // 清除token和用户信息
+    tokenStore.removeToken();
+    userInfoStore.removeInfo();
+    
+    // 跳转到登录页
+    router.push('/login');
+  } catch (error) {
+    // 用户点击了取消
+    console.log('取消退出登录');
+  }
 }
 
-// const handleSelect = (key) => {
-//     console.log('选中菜单:', key)
-// }
 </script>
 
 <template>
     <div class="header-container">
         <el-menu :default-active="route.path" class="main-menu" mode="horizontal" background-color="#171D25"
-            text-color="#efefef" active-text-color="#0077FF" @select="handleSelect" router>
+            text-color="#efefef" active-text-color="#0077FF"  router>
             <!-- 左侧菜单项 -->
             <div class="left-section">
                 <img src="/src/assets/logo.png" alt="游戏商店" class="site-logo">
                 <span class="site-name">GameShop</span>
 
-                <el-menu-item index="/main">首页</el-menu-item>
+                <el-menu-item index="/">首页</el-menu-item>
 
-                <el-sub-menu index="category">
+                <el-sub-menu index="category" @select="handleSelect">
                     <template #title>游戏分类</template>
-                    <el-menu-item index="action">动作</el-menu-item>
-                    <el-menu-item index="adventure">冒险</el-menu-item>
-                    <el-menu-item index="casul">休闲</el-menu-item>
-                    <el-menu-item index="role">角色扮演</el-menu-item>
-                    <el-menu-item index="simulation">模拟</el-menu-item>
-                    <el-menu-item index="sports">体育及竞速</el-menu-item>
+                    <el-menu-item index="/products/category/action">动作</el-menu-item>
+                    <el-menu-item index="/products/category/adventure">冒险</el-menu-item>
+                    <el-menu-item index="/products/category/casul">休闲</el-menu-item>
+                    <el-menu-item index="/products/category/role">角色扮演</el-menu-item>
+                    <el-menu-item index="/products/category/simulation">模拟</el-menu-item>
+                    <el-menu-item index="/products/category/sports">体育及竞速</el-menu-item>
                 </el-sub-menu>
 
                 <el-menu-item index="/cart">购物车</el-menu-item>
@@ -48,20 +92,14 @@ const handleLogout = () => {
 
             <!-- 右侧功能区 -->
             <div class="right-section">
-                <el-input placeholder="搜索游戏..." class="search-bar" clearable>
-                    <template #prefix>
-                        <el-icon><Search /></el-icon>
-                    </template>
-                </el-input>
 
                 <el-sub-menu index="user-center">
                     <template #title>
-                        <!-- <el-avatar :size="32" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" /> -->
-                        <span class="user-name">用户名</span>
+                        <span class="user-name">{{ localUserInfo.username }}</span>
                     </template>
                     <el-menu-item index="my-games">我的游戏库</el-menu-item>
-                    <el-menu-item index="settings">账户设置</el-menu-item>
-                    <el-menu-item index="logout" @click="handleLogout">退出登录</el-menu-item>
+                    <el-menu-item index="user">账户设置</el-menu-item>
+                    <el-menu-item @click="handleLogout">退出登录</el-menu-item>
                 </el-sub-menu>
             </div>
         </el-menu>
