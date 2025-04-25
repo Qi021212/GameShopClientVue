@@ -53,7 +53,7 @@ const fetchOrderList = async () => {
                 },
                 items: item.items.map(i => ({
                     ...i,
-                    image: i.picture1 ? `http://localhost:8080/images/${i.picture1}` : '/src/assets/loading.png',
+                    image: i.picture1 ? `/images/${i.picture1}` : '/src/assets/loading.png',
                 })),
             }));
         } else {

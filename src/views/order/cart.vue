@@ -47,7 +47,7 @@ const fetchCartList = async () => {
     if (response && Array.isArray(response)) { // 检查是否为数组
       cartItems.value = response.map(item => ({
         ...item,
-        picture1: item.picture1 ? `http://localhost:8080/images/${item.picture1}` : '/src/assets/loading.png',
+        picture1: item.picture1 ? `/images/${item.picture1}` : '/src/assets/loading.png',
       }));
     } else {
       ElMessage.warning('未获取到购物车数据');

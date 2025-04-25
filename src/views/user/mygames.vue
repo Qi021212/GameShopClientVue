@@ -54,7 +54,7 @@ const fetchGameList = async () => {
             games.value = gameItems.map(game => ({
                 itemId: game.itemId,
                 itemName: game.itemName,
-                picture1: game.picture1 ? `http://localhost:8080/images/${game.picture1}` : '/src/assets/loading.png'
+                picture1: game.picture1 ? `/images/${game.picture1}` : '/src/assets/loading.png'
             }));
         } else {
             ElMessage.warning('您的游戏库为空');

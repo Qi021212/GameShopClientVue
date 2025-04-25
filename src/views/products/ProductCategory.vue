@@ -25,7 +25,7 @@ const fetchProductList = async () => {
         category: item.category || '',
         type: item.type || '',
         // 如果 item.picture 存在，则拼接完整图片 URL，否则使用默认图片
-        image: item.picture1 ? `http://localhost:8080/images/${item.picture1}` : '/src/assets/ProductsManage/img/loading.png',
+        image: item.picture1 ? `/images/${item.picture1}` : '/src/assets/ProductsManage/img/loading.png',
         description: item.description || 0,
         price: item.price,
         storage: item.storage || 0,

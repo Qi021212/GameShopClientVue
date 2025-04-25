@@ -5,6 +5,7 @@ import { ElCard, ElImage, ElButton, ElSelect, ElOption, ElDivider, ElTag, ElMess
 import { ShoppingCart, Wallet } from '@element-plus/icons-vue';
 import { getProductDetail, addProductComment } from '@/api/product.js';
 import { addToCart } from '@/api/cart.js';
+import dayjs from 'dayjs';
 
 const route = useRoute();
 const router = useRouter();
@@ -115,6 +116,11 @@ const handleAddToCart = async () => {
   }
 };
 
+// 格式化时间
+const formatTime = (time) => {
+  return dayjs(time).format('YYYY-MM-DD HH:mm:ss') 
+}
+
 const submitComment = async () => {
   if (!newComment.value.trim()) {
     return ElMessage.warning('请输入评论内容');
@@ -152,7 +158,7 @@ onMounted(() => {
           
           <div class="main-image">
             <el-image v-if="actualPictureKeys.length > 0"
-              :src="`http://localhost:8080/images/${product[actualPictureKeys[activeImageIndex]]}`" fit="contain"
+              :src="`/images/${product[actualPictureKeys[activeImageIndex]]}`" fit="contain"
               class="product-image" />
             <el-empty v-else description="暂无图片" />
           </div>
@@ -160,7 +166,7 @@ onMounted(() => {
           <div class="thumbnail-list">
             <div v-for="(picKey, index) in actualPictureKeys" :key="picKey" class="thumbnail-item"
               :class="{ active: activeImageIndex === index }" @mouseenter="activeImageIndex = index">
-              <el-image :src="`http://localhost:8080/images/${product[picKey]}`" fit="cover" class="thumbnail-img" />
+              <el-image :src="`/images/${product[picKey]}`" fit="cover" class="thumbnail-img" />
             </div>
           </div>
         </div>
@@ -235,7 +241,7 @@ onMounted(() => {
         <div v-for="(comment, index) in paginatedComments" :key="index" class="comment-item">
           <div class="comment-header">
             <span class="comment-author">{{ comment.userName }}</span>
-            <span class="comment-date">{{ comment.createTime }}</span>
+            <span class="comment-date">{{ formatTime(comment.createTime) || comment.createTime }}</span>
           </div>
 
           <p class="comment-content">{{ comment.content }}</p>
